@@ -1,6 +1,6 @@
 MAKEFLAGS += --no-print-directory
 
-BUILD_DIR = build
+BUILD_DIR := build
 
 build:
 	cmake -S . -B $(BUILD_DIR)
