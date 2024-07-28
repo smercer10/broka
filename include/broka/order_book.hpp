@@ -1,6 +1,7 @@
 #pragma once
 #include "common.hpp"
 #include "order.hpp"
+#include "trade.hpp"
 #include <map>
 #include <unordered_map>
 #include <utility>
@@ -36,9 +37,12 @@ private:
         Orders::iterator location;
     };
 
-    std::map<Price, Orders, std::greater<>> m_buyOrders;
-    std::map<Price, Orders> m_sellOrders;
+    std::map<Price, Orders, std::greater<>> m_bids;
+    std::map<Price, Orders> m_asks;
     std::unordered_map<OrderId, OrderEntry> m_orders;
 
-    [[nodiscard]] auto canMatch(Side side, Price price) const -> bool;
+    [[nodiscard]] auto canMatchOrder(Side side, Price price) const -> bool;
+    [[nodiscard]] auto matchOrders() -> Trades;
+
+    auto cancelIocOrders(Orders& orders) -> void;
 };

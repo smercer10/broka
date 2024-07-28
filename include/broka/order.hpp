@@ -1,13 +1,13 @@
 #pragma once
 #include "common.hpp"
+#include <deque>
 #include <memory>
-#include <vector>
 
 using OrderId = int;
 
 enum class OrderType {
-    fillOrKill,
-    goodTillCancel,
+    gtc, // Good 'til cancelled.
+    ioc, // Immediate or cancel.
 };
 
 enum class Side {
@@ -36,6 +36,7 @@ public:
     [[nodiscard]] auto filledQuantity() const -> Quantity { return m_initialQuantity - m_remainingQuantity; }
 
     auto fill(Quantity quantity) -> void;
+    [[nodiscard]] auto isFilled() const -> bool { return m_remainingQuantity == 0; }
 
 private:
     OrderId m_id;
@@ -47,7 +48,7 @@ private:
 };
 
 using OrderPtr = std::shared_ptr<Order>;
-using Orders = std::vector<OrderPtr>;
+using Orders = std::deque<OrderPtr>;
 
 class AdjustableOrder {
 public:
