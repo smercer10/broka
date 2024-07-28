@@ -4,6 +4,7 @@ Checks:
 	-altera-*,
 	-android-*,
 	-boost-*,
+    -bugprone-easily-swappable-parameters,
 	-darwin-*,
 	-fuchsia-trailing-return,
 	-linuxkernel-*,
