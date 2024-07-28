@@ -25,6 +25,36 @@ auto OrderBook::cancelOrder(OrderId id) -> void
     }
 }
 
+auto OrderBook::levelsInfo() const -> OrderBookLevelsInfo
+{
+    LevelsInfo bidsInfo;
+    LevelsInfo asksInfo;
+
+    // Ensures no further reallocations.
+    bidsInfo.reserve(m_bids.size());
+    asksInfo.reserve(m_asks.size());
+
+    auto createLevelInfo = [](Price price, const Orders& orders) {
+        Quantity totalQuantity { 0 };
+
+        for (const auto& order : orders) {
+            totalQuantity += order->remainingQuantity();
+        }
+
+        return LevelInfo { price, totalQuantity };
+    };
+
+    for (const auto& [price, orders] : m_bids) {
+        bidsInfo.emplace_back(createLevelInfo(price, orders));
+    }
+
+    for (const auto& [price, orders] : m_asks) {
+        asksInfo.emplace_back(createLevelInfo(price, orders));
+    }
+
+    return OrderBookLevelsInfo { bidsInfo, asksInfo };
+}
+
 auto OrderBook::placeOrder(OrderPtr order) -> Trades
 {
     Trades trades;
@@ -65,13 +95,13 @@ auto OrderBook::placeOrder(OrderPtr order) -> Trades
     return trades;
 }
 
-auto OrderBook::updateOrder(OrderUpdate update) -> Trades
+auto OrderBook::updateOrder(const OrderUpdate& update) -> Trades
 {
     if (!m_orders.contains(update.id())) {
         return {};
     }
 
-    const auto existingOrder { m_orders[update.id()].order };
+    const auto& existingOrder { m_orders[update.id()].order };
     cancelOrder(update.id());
     return placeOrder(update.toOrder(existingOrder->side(), existingOrder->type()));
 }
@@ -90,7 +120,7 @@ auto OrderBook::canMatchOrder(Side side, Price price) const -> bool
 auto OrderBook::matchOrders() -> Trades
 {
     Trades trades;
-    trades.reserve(std::min(m_bids.size(), m_asks.size())); // Prevents unnecessary reallocations.
+    trades.reserve(std::min(m_bids.size(), m_asks.size())); // Ensures no further reallocations.
 
     while (true) {
         if (m_bids.empty() || m_asks.empty()) {
@@ -105,8 +135,8 @@ auto OrderBook::matchOrders() -> Trades
         }
 
         while (!buyOrders.empty() && !sellOrders.empty()) {
-            auto earliestBuyOrder { buyOrders.front() };
-            auto earliestSellOrder { sellOrders.front() };
+            auto& earliestBuyOrder { buyOrders.front() };
+            auto& earliestSellOrder { sellOrders.front() };
 
             auto tradeQuantity { std::min(earliestBuyOrder->remainingQuantity(), earliestSellOrder->remainingQuantity()) };
 

@@ -14,7 +14,6 @@ public:
         : m_quantity { quantity }
         , m_buySideInfo { buySideInfo }
         , m_sellSideInfo { sellSideInfo }
-
     {
     }
 

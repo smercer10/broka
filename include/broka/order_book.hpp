@@ -33,9 +33,10 @@ private:
 class OrderBook {
 public:
     auto cancelOrder(OrderId id) -> void;
+    [[nodiscard]] auto levelsInfo() const -> OrderBookLevelsInfo;
     [[nodiscard]] auto placeOrder(OrderPtr order) -> Trades;
     [[nodiscard]] auto size() const -> std::size_t { return m_orders.size(); }
-    [[nodiscard]] auto updateOrder(OrderUpdate update) -> Trades;
+    [[nodiscard]] auto updateOrder(const OrderUpdate& update) -> Trades;
 
 private:
     struct OrderEntry {
