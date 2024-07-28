@@ -39,11 +39,11 @@ public:
 
 private:
     OrderId m_id;
+    OrderType m_type;
     Side m_side;
     Price m_price;
     Quantity m_initialQuantity;
     Quantity m_remainingQuantity;
-    OrderType m_type;
 };
 
 using OrderPtr = std::shared_ptr<Order>;
