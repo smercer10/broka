@@ -50,9 +50,9 @@ private:
 using OrderPtr = std::shared_ptr<Order>;
 using Orders = std::deque<OrderPtr>;
 
-class OrderChange {
+class OrderUpdate {
 public:
-    OrderChange(OrderId id, Price price, Quantity quantity)
+    OrderUpdate(OrderId id, Price price, Quantity quantity)
         : m_id { id }
         , m_price { price }
         , m_quantity { quantity }

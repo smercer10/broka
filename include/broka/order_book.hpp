@@ -33,13 +33,14 @@ private:
 class OrderBook {
 public:
     auto cancelOrder(OrderId id) -> void;
-    [[nodiscard]] auto changeOrder(OrderChange change) -> Trades;
     [[nodiscard]] auto placeOrder(OrderPtr order) -> Trades;
+    [[nodiscard]] auto size() const -> std::size_t { return m_orders.size(); }
+    [[nodiscard]] auto updateOrder(OrderUpdate update) -> Trades;
 
 private:
     struct OrderEntry {
         OrderPtr order;
-        Orders::iterator location;
+        Orders::iterator location; // Points to the order in the corresponding m_bids or m_asks orders deque.
     };
 
     std::map<Price, Orders, std::greater<>> m_bids;
@@ -48,6 +49,4 @@ private:
 
     [[nodiscard]] auto canMatchOrder(Side side, Price price) const -> bool;
     [[nodiscard]] auto matchOrders() -> Trades;
-
-    auto cancelIocOrders(Orders& orders) -> void;
 };

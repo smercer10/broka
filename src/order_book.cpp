@@ -2,17 +2,6 @@
 #include "trade.hpp"
 #include <order_book.hpp>
 
-auto OrderBook::changeOrder(OrderChange change) -> Trades
-{
-    if (!m_orders.contains(change.id())) {
-        return {};
-    }
-
-    const auto existingOrder { m_orders[change.id()].order };
-    cancelOrder(change.id());
-    return placeOrder(change.toOrder(existingOrder->side(), existingOrder->type()));
-}
-
 auto OrderBook::cancelOrder(OrderId id) -> void
 {
     if (!m_orders.contains(id)) {
@@ -74,6 +63,17 @@ auto OrderBook::placeOrder(OrderPtr order) -> Trades
     }
 
     return trades;
+}
+
+auto OrderBook::updateOrder(OrderUpdate update) -> Trades
+{
+    if (!m_orders.contains(update.id())) {
+        return {};
+    }
+
+    const auto existingOrder { m_orders[update.id()].order };
+    cancelOrder(update.id());
+    return placeOrder(update.toOrder(existingOrder->side(), existingOrder->type()));
 }
 
 auto OrderBook::canMatchOrder(Side side, Price price) const -> bool
