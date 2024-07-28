@@ -1,16 +1,60 @@
+#include "order.hpp"
 #include "trade.hpp"
 #include <order_book.hpp>
 
+auto OrderBook::cancelOrder(OrderId id) -> void
+{
+}
+
+auto OrderBook::placeOrder(OrderPtr order) -> Trades
+{
+    Trades trades;
+    auto shouldCancelAfter { false };
+
+    if (m_orders.contains(order->id())) {
+        return trades;
+    }
+
+    if (order->type() == OrderType::ioc) {
+        if (!canMatchOrder(order->side(), order->price())) {
+            return trades;
+        }
+        shouldCancelAfter = true;
+    }
+
+    Orders::iterator it;
+
+    if (order->side() == Side::buy) {
+        auto& buyOrders { m_bids[order->price()] };
+        buyOrders.emplace_back(order);
+        it = --buyOrders.end();
+
+    } else {
+        auto& sellOrders { m_asks[order->price()] };
+        sellOrders.emplace_back(order);
+        it = --sellOrders.end();
+    }
+
+    m_orders.emplace(order->id(), OrderEntry { order, it });
+
+    trades = matchOrders();
+
+    if (shouldCancelAfter) {
+        cancelOrder(order->id());
+    }
+
+    return trades;
+}
+
 auto OrderBook::canMatchOrder(Side side, Price price) const -> bool
 {
-    switch (side) {
-    case Side::buy:
+    if (side == Side::buy) {
         return !m_asks.empty() && m_asks.begin()->first <= price;
-    case Side::sell:
-        return !m_bids.empty() && m_bids.begin()->first >= price;
-    default:
-        return false; // Should be unreachable.
     }
+    if (side == Side::sell) {
+        return !m_bids.empty() && m_bids.begin()->first >= price;
+    }
+    return false; // Should be unreachable.
 }
 
 auto OrderBook::matchOrders() -> Trades
@@ -67,30 +111,5 @@ auto OrderBook::matchOrders() -> Trades
         }
     }
 
-    for (auto& bid : m_bids) {
-        auto& remainingBuyOrders = bid.second;
-        cancelIocOrders(remainingBuyOrders);
-    }
-
-    for (auto& ask : m_asks) {
-        auto& remainingSellOrders = ask.second;
-        cancelIocOrders(remainingSellOrders);
-    }
-
     return trades;
-}
-
-auto OrderBook::cancelIocOrders(Orders& orders) -> void
-{
-    for (auto it { orders.begin() }; it != orders.end();) {
-        auto& order { *it };
-
-        if (order->type() == OrderType::ioc) {
-            m_orders.erase(order->id());
-            it = orders.erase(it);
-            continue;
-        }
-
-        ++it;
-    }
 }

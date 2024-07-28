@@ -31,6 +31,10 @@ private:
 };
 
 class OrderBook {
+public:
+    auto cancelOrder(OrderId id) -> void;
+    [[nodiscard]] auto placeOrder(OrderPtr order) -> Trades;
+
 private:
     struct OrderEntry {
         OrderPtr order;
