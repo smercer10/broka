@@ -2,6 +2,17 @@
 #include "trade.hpp"
 #include <order_book.hpp>
 
+auto OrderBook::changeOrder(OrderChange change) -> Trades
+{
+    if (!m_orders.contains(change.id())) {
+        return {};
+    }
+
+    const auto existingOrder { m_orders[change.id()].order };
+    cancelOrder(change.id());
+    return placeOrder(change.toOrder(existingOrder->side(), existingOrder->type()));
+}
+
 auto OrderBook::cancelOrder(OrderId id) -> void
 {
     if (!m_orders.contains(id)) {

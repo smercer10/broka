@@ -33,6 +33,7 @@ private:
 class OrderBook {
 public:
     auto cancelOrder(OrderId id) -> void;
+    [[nodiscard]] auto changeOrder(OrderChange change) -> Trades;
     [[nodiscard]] auto placeOrder(OrderPtr order) -> Trades;
 
 private:
