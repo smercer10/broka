@@ -2,11 +2,13 @@
 #include "common.hpp"
 #include <deque>
 #include <memory>
+#include <vector>
 
 using OrderId = int;
 
 enum class OrderType {
     fok, // Fill or kill.
+    day,
     gtc, // Good 'til cancelled.
     ioc, // Immediate or cancel.
     market,
@@ -40,11 +42,10 @@ public:
     [[nodiscard]] auto price() const -> Price { return m_price; }
     [[nodiscard]] auto initialQuantity() const -> Quantity { return m_initialQuantity; }
     [[nodiscard]] auto remainingQuantity() const -> Quantity { return m_remainingQuantity; }
-    [[nodiscard]] auto filledQuantity() const -> Quantity { return m_initialQuantity - m_remainingQuantity; }
 
     auto fill(Quantity quantity) -> void;
     [[nodiscard]] auto isFilled() const -> bool { return m_remainingQuantity == 0; }
-    auto toIoc(Price price) -> void;
+    auto toIoc(Price price) -> void; // Used to handle market orders.
 
 private:
     OrderId m_id;
@@ -57,6 +58,7 @@ private:
 
 using OrderPtr = std::shared_ptr<Order>;
 using Orders = std::deque<OrderPtr>;
+using OrderIds = std::vector<OrderId>;
 
 class OrderUpdate {
 public:

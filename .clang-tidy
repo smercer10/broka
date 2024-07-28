@@ -7,6 +7,7 @@ Checks:
     -bugprone-easily-swappable-parameters,
 	-darwin-*,
 	-fuchsia-trailing-return,
+    -google-build-using-namespace,
 	-linuxkernel-*,
 	-llvmlibc-*,
 	-mpi-*,
