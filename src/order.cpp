@@ -1,16 +1,15 @@
 #include "order.hpp"
-#include <stdexcept>
+#include <cassert>
 
 auto Order::fill(Quantity quantity) -> void
 {
-    if (quantity > m_remainingQuantity) {
-        throw std::runtime_error { "Cannot fill more than remaining order quantity." };
-    }
+    assert(quantity <= m_remainingQuantity);
     m_remainingQuantity -= quantity;
 }
 
 auto Order::toIoc(Price price) -> void
 {
+    assert(m_type == OrderType::market);
     m_type = OrderType::ioc;
     m_price = price;
 }
