@@ -34,7 +34,7 @@ class OrderBook {
 public:
     auto cancelOrder(OrderId id) -> void;
     [[nodiscard]] auto levelsInfo() const -> OrderBookLevelsInfo;
-    [[nodiscard]] auto placeOrder(OrderPtr order) -> Trades;
+    [[nodiscard]] auto placeOrder(const OrderPtr& order) -> Trades;
     [[nodiscard]] auto size() const -> std::size_t { return m_orders.size(); }
     [[nodiscard]] auto updateOrder(const OrderUpdate& update) -> Trades;
 
@@ -49,5 +49,6 @@ private:
     std::unordered_map<OrderId, OrderEntry> m_orders;
 
     [[nodiscard]] auto canMatchOrder(Side side, Price price) const -> bool;
+    [[nodiscard]] auto convertMarketOrder(const OrderPtr& order) -> bool;
     [[nodiscard]] auto matchOrders() -> Trades;
 };

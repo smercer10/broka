@@ -55,7 +55,7 @@ auto OrderBook::levelsInfo() const -> OrderBookLevelsInfo
     return OrderBookLevelsInfo { bidsInfo, asksInfo };
 }
 
-auto OrderBook::placeOrder(OrderPtr order) -> Trades
+auto OrderBook::placeOrder(const OrderPtr& order) -> Trades
 {
     Trades trades;
     auto shouldCancelAfter { false };
@@ -64,16 +64,8 @@ auto OrderBook::placeOrder(OrderPtr order) -> Trades
         return trades;
     }
 
-    if (order->type() == OrderType::market) {
-        if (order->side() == Side::buy && !m_asks.empty()) {
-            const auto worstAskPrice { m_asks.rbegin()->first };
-            order->toIoc(worstAskPrice);
-        } else if (order->side() == Side::sell && !m_bids.empty()) {
-            const auto worstBidPrice { m_bids.rbegin()->first };
-            order->toIoc(worstBidPrice);
-        } else {
-            return trades;
-        }
+    if (order->type() == OrderType::market && !convertMarketOrder(order)) {
+        return trades;
     }
 
     if (order->type() == OrderType::ioc) {
@@ -127,6 +119,21 @@ auto OrderBook::canMatchOrder(Side side, Price price) const -> bool
         return !m_bids.empty() && m_bids.begin()->first >= price;
     }
     return false; // Should be unreachable.
+}
+
+auto OrderBook::convertMarketOrder(const OrderPtr& order) -> bool
+{
+    if (order->side() == Side::buy && !m_asks.empty()) {
+        const auto worstAskPrice { m_asks.rbegin()->first };
+        order->toIoc(worstAskPrice);
+        return true;
+    }
+    if (order->side() == Side::sell && !m_bids.empty()) {
+        const auto worstBidPrice { m_bids.rbegin()->first };
+        order->toIoc(worstBidPrice);
+        return true;
+    }
+    return false;
 }
 
 auto OrderBook::matchOrders() -> Trades
