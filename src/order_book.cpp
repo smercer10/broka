@@ -4,6 +4,25 @@
 
 auto OrderBook::cancelOrder(OrderId id) -> void
 {
+    if (!m_orders.contains(id)) {
+        return;
+    }
+
+    const auto& [order, it] { m_orders[id] };
+
+    if (order->side() == Side::buy) {
+        auto& buyOrders { m_bids[order->price()] };
+        buyOrders.erase(it);
+        if (buyOrders.empty()) {
+            m_bids.erase(order->price());
+        }
+    } else {
+        auto& sellOrders { m_asks[order->price()] };
+        sellOrders.erase(it);
+        if (sellOrders.empty()) {
+            m_asks.erase(order->price());
+        }
+    }
 }
 
 auto OrderBook::placeOrder(OrderPtr order) -> Trades
