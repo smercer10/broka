@@ -84,7 +84,7 @@ auto OrderBook::updateOrder(const OrderUpdate& update) -> Trades
 
 auto OrderBook::cancelExpiredDayOrders() -> void
 {
-    using namespace std::chrono;
+    using namespace std::chrono; // NOLINT(google-build-using-namespace)
 
     while (true) {
         const auto now { system_clock::now() };
