@@ -1,5 +1,5 @@
 #pragma once
-#include <bits/chrono.h>
+#include <chrono>
 
 using Price = int;
 using Quantity = int;
