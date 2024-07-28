@@ -48,3 +48,27 @@ private:
 
 using OrderPtr = std::shared_ptr<Order>;
 using Orders = std::vector<OrderPtr>;
+
+class AdjustableOrder {
+public:
+    AdjustableOrder(OrderId id, Price price, Quantity quantity)
+        : m_id { id }
+        , m_price { price }
+        , m_quantity { quantity }
+    {
+    }
+
+    [[nodiscard]] auto id() const -> OrderId { return m_id; }
+    [[nodiscard]] auto price() const -> Price { return m_price; }
+    [[nodiscard]] auto quantity() const -> Quantity { return m_quantity; }
+
+    [[nodiscard]] auto toOrder(Side side, OrderType type) const -> OrderPtr
+    {
+        return std::make_shared<Order>(m_id, type, side, m_price, m_quantity);
+    }
+
+private:
+    OrderId m_id;
+    Price m_price;
+    Quantity m_quantity;
+};
