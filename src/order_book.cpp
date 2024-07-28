@@ -58,21 +58,18 @@ auto OrderBook::levelsInfo() const -> OrderBookLevelsInfo
 auto OrderBook::placeOrder(const OrderPtr& order) -> Trades
 {
     Trades trades;
-    auto shouldCancelAfter { false };
 
     if (m_orders.contains(order->id())) {
         return trades;
     }
-
     if (order->type() == OrderType::market && !convertMarketOrder(order)) {
         return trades;
     }
-
-    if (order->type() == OrderType::ioc) {
-        if (!canMatchOrder(order->side(), order->price())) {
-            return trades;
-        }
-        shouldCancelAfter = true;
+    if (order->type() == OrderType::fok && !canFullyFillOrder(order->side(), order->price(), order->initialQuantity())) {
+        return trades;
+    }
+    if (order->type() == OrderType::ioc && !canPartiallyFillOrder(order->side(), order->price())) {
+        return trades;
     }
 
     Orders::iterator it;
@@ -81,7 +78,6 @@ auto OrderBook::placeOrder(const OrderPtr& order) -> Trades
         auto& buyOrders { m_bids[order->price()] };
         buyOrders.emplace_back(order);
         it = --buyOrders.end();
-
     } else {
         auto& sellOrders { m_asks[order->price()] };
         sellOrders.emplace_back(order);
@@ -92,7 +88,7 @@ auto OrderBook::placeOrder(const OrderPtr& order) -> Trades
 
     trades = matchOrders();
 
-    if (shouldCancelAfter) {
+    if (order->type() == OrderType::ioc && !order->isFilled()) {
         cancelOrder(order->id());
     }
 
@@ -110,7 +106,30 @@ auto OrderBook::updateOrder(const OrderUpdate& update) -> Trades
     return placeOrder(update.toOrder(existingOrder->side(), existingOrder->type()));
 }
 
-auto OrderBook::canMatchOrder(Side side, Price price) const -> bool
+auto OrderBook::canFullyFillOrder(Side side, Price price, Quantity quantity) const -> bool
+{
+    auto orderBookLevelsInfo { levelsInfo() };
+    const auto& levelsInfo { side == Side::buy ? orderBookLevelsInfo.askLevelsInfo() : orderBookLevelsInfo.bidLevelsInfo() };
+
+    Quantity totalQuantity { 0 };
+
+    for (const auto& levelInfo : levelsInfo) {
+        if (side == Side::buy && levelInfo.price > price) {
+            break;
+        }
+        if (side == Side::sell && levelInfo.price < price) {
+            break;
+        }
+
+        totalQuantity += levelInfo.quantity;
+        if (totalQuantity >= quantity) {
+            return true;
+        }
+    }
+    return false;
+}
+
+auto OrderBook::canPartiallyFillOrder(Side side, Price price) const -> bool
 {
     if (side == Side::buy) {
         return !m_asks.empty() && m_asks.begin()->first <= price;

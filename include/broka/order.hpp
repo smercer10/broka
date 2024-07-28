@@ -6,6 +6,7 @@
 using OrderId = int;
 
 enum class OrderType {
+    fok, // Fill or kill.
     gtc, // Good 'til cancelled.
     ioc, // Immediate or cancel.
     market,

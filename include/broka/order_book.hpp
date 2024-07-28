@@ -16,18 +16,18 @@ using LevelsInfo = std::vector<LevelInfo>;
 
 class OrderBookLevelsInfo {
 public:
-    OrderBookLevelsInfo(LevelsInfo bidsInfo, LevelsInfo asksInfo)
-        : m_bidsInfo { std::move(bidsInfo) }
-        , m_asksInfo { std::move(asksInfo) }
+    OrderBookLevelsInfo(LevelsInfo bidLevelsInfo, LevelsInfo askLevelsInfo)
+        : m_bidLevelsInfo { std::move(bidLevelsInfo) }
+        , m_askLevelsInfo { std::move(askLevelsInfo) }
     {
     }
 
-    [[nodiscard]] auto bidsInfo() const -> const LevelsInfo& { return m_bidsInfo; }
-    [[nodiscard]] auto asksInfo() const -> const LevelsInfo& { return m_asksInfo; }
+    [[nodiscard]] auto bidLevelsInfo() const -> const LevelsInfo& { return m_bidLevelsInfo; }
+    [[nodiscard]] auto askLevelsInfo() const -> const LevelsInfo& { return m_askLevelsInfo; }
 
 private:
-    LevelsInfo m_bidsInfo;
-    LevelsInfo m_asksInfo;
+    LevelsInfo m_bidLevelsInfo;
+    LevelsInfo m_askLevelsInfo;
 };
 
 class OrderBook {
@@ -48,7 +48,8 @@ private:
     std::map<Price, Orders> m_asks;
     std::unordered_map<OrderId, OrderEntry> m_orders;
 
-    [[nodiscard]] auto canMatchOrder(Side side, Price price) const -> bool;
+    [[nodiscard]] auto canFullyFillOrder(Side side, Price price, Quantity quantity) const -> bool;
+    [[nodiscard]] auto canPartiallyFillOrder(Side side, Price price) const -> bool;
     [[nodiscard]] auto convertMarketOrder(const OrderPtr& order) -> bool;
     [[nodiscard]] auto matchOrders() -> Trades;
 };
