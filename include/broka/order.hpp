@@ -8,6 +8,7 @@ using OrderId = int;
 enum class OrderType {
     gtc, // Good 'til cancelled.
     ioc, // Immediate or cancel.
+    market,
 };
 
 enum class Side {
@@ -27,6 +28,11 @@ public:
     {
     }
 
+    Order(OrderId id, Side side, Quantity quantity)
+        : Order(id, OrderType::market, side, Constants::invalidPrice, quantity)
+    {
+    }
+
     [[nodiscard]] auto id() const -> OrderId { return m_id; }
     [[nodiscard]] auto type() const -> OrderType { return m_type; }
     [[nodiscard]] auto side() const -> Side { return m_side; }
@@ -37,6 +43,7 @@ public:
 
     auto fill(Quantity quantity) -> void;
     [[nodiscard]] auto isFilled() const -> bool { return m_remainingQuantity == 0; }
+    auto toIoc(Price price) -> void;
 
 private:
     OrderId m_id;

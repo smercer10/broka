@@ -64,6 +64,18 @@ auto OrderBook::placeOrder(OrderPtr order) -> Trades
         return trades;
     }
 
+    if (order->type() == OrderType::market) {
+        if (order->side() == Side::buy && !m_asks.empty()) {
+            const auto worstAskPrice { m_asks.rbegin()->first };
+            order->toIoc(worstAskPrice);
+        } else if (order->side() == Side::sell && !m_bids.empty()) {
+            const auto worstBidPrice { m_bids.rbegin()->first };
+            order->toIoc(worstBidPrice);
+        } else {
+            return trades;
+        }
+    }
+
     if (order->type() == OrderType::ioc) {
         if (!canMatchOrder(order->side(), order->price())) {
             return trades;
@@ -140,24 +152,21 @@ auto OrderBook::matchOrders() -> Trades
 
             auto tradeQuantity { std::min(earliestBuyOrder->remainingQuantity(), earliestSellOrder->remainingQuantity()) };
 
-            auto earliestBuyOrderId { earliestBuyOrder->id() };
-            auto earliestSellOrderId { earliestSellOrder->id() };
-
             trades.emplace_back(
                 tradeQuantity,
-                TradeSideInfo { earliestBuyOrderId, bestBidPrice },
-                TradeSideInfo { earliestSellOrderId, bestAskPrice });
+                TradeSideInfo { earliestBuyOrder->id(), bestBidPrice },
+                TradeSideInfo { earliestSellOrder->id(), bestAskPrice });
 
             earliestBuyOrder->fill(tradeQuantity);
             earliestSellOrder->fill(tradeQuantity);
 
             if (earliestBuyOrder->isFilled()) {
-                m_orders.erase(earliestBuyOrderId);
+                m_orders.erase(earliestBuyOrder->id());
                 buyOrders.pop_front();
             }
 
             if (earliestSellOrder->isFilled()) {
-                m_orders.erase(earliestSellOrderId);
+                m_orders.erase(earliestSellOrder->id());
                 sellOrders.pop_front();
             }
 
