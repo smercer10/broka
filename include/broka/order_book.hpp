@@ -39,4 +39,6 @@ private:
     std::map<Price, Orders, std::greater<>> m_buyOrders;
     std::map<Price, Orders> m_sellOrders;
     std::unordered_map<OrderId, OrderEntry> m_orders;
+
+    [[nodiscard]] auto canMatch(Side side, Price price) const -> bool;
 };
