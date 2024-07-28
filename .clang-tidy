@@ -1,20 +1,20 @@
 Checks:
-	'*,
-	-abseil-*,
-	-altera-*,
-	-android-*,
-	-boost-*,
+    '*,
+    -abseil-*,
+    -altera-*,
+    -android-*,
+    -boost-*,
     -bugprone-easily-swappable-parameters,
-	-darwin-*,
-	-fuchsia-trailing-return,
+    -darwin-*,
+    -fuchsia-trailing-return,
     -google-build-using-namespace,
-	-linuxkernel-*,
-	-llvmlibc-*,
-	-mpi-*,
-	-objc-*,
-	-openmp-*,
-	-readability-identifier-length,
-	-zircon-*'
+    -linuxkernel-*,
+    -llvmlibc-*,
+    -mpi-*,
+    -objc-*,
+    -openmp-*,
+    -readability-identifier-length,
+    -zircon-*'
 
 CheckOptions:
     readability-identifier-naming.ClassCase: CamelCase
