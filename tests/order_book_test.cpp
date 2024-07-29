@@ -3,6 +3,43 @@
 #include "gtest/gtest.h"
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+TEST(OrderBookTest, placeFokOrder)
+{
+    OrderBook orderBook;
+    OrderPtr order1 { std::make_shared<Order>(1, OrderType::fok, Side::buy, 99, 150) };
+    OrderPtr order2 { std::make_shared<Order>(2, OrderType::gtc, Side::buy, 99, 50) };
+    OrderPtr order3 { std::make_shared<Order>(3, OrderType::fok, Side::sell, 99, 51) };
+    OrderPtr order4 { std::make_shared<Order>(4, OrderType::fok, Side::sell, 99, 30) };
+    OrderPtr order5 { std::make_shared<Order>(5, OrderType::fok, Side::sell, 99, 20) };
+
+    auto trades { orderBook.placeOrder(order1) };
+    EXPECT_EQ(orderBook.size(), 0);
+    EXPECT_EQ(order1->remainingQuantity(), 150);
+
+    trades = orderBook.placeOrder(order2);
+    EXPECT_EQ(orderBook.size(), 1);
+
+    trades = orderBook.placeOrder(order3);
+    EXPECT_EQ(orderBook.size(), 1);
+    EXPECT_EQ(order3->remainingQuantity(), 51);
+
+    trades = orderBook.placeOrder(order4);
+    EXPECT_EQ(orderBook.size(), 1);
+    EXPECT_EQ(trades[0].quantity(), 30);
+    EXPECT_EQ(trades[0].buySideInfo().orderId, 2);
+    EXPECT_EQ(trades[0].sellSideInfo().orderId, 4);
+    EXPECT_TRUE(order4->isFilled());
+    EXPECT_EQ(order2->remainingQuantity(), 20);
+
+    trades = orderBook.placeOrder(order5);
+    EXPECT_EQ(orderBook.size(), 0);
+    EXPECT_EQ(trades[0].quantity(), 20);
+    EXPECT_EQ(trades[0].buySideInfo().orderId, 2);
+    EXPECT_EQ(trades[0].sellSideInfo().orderId, 5);
+    EXPECT_TRUE(order2->isFilled());
+    EXPECT_TRUE(order5->isFilled());
+}
+
 TEST(OrderBookTest, placeGtcOrder)
 {
     OrderBook orderBook;

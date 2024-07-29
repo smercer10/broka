@@ -28,33 +28,7 @@ auto OrderBook::cancelOrder(OrderId id) -> void
 auto OrderBook::levelsInfo() const -> OrderBookLevelsInfo
 {
     std::lock_guard lock { m_mutex };
-
-    LevelsInfo bidsInfo;
-    LevelsInfo asksInfo;
-
-    // Ensures no further reallocations.
-    bidsInfo.reserve(m_bids.size());
-    asksInfo.reserve(m_asks.size());
-
-    auto createLevelInfo = [](Price price, const Orders& orders) {
-        Quantity totalQuantity { 0 };
-
-        for (const auto& order : orders) {
-            totalQuantity += order->remainingQuantity();
-        }
-
-        return LevelInfo { price, totalQuantity };
-    };
-
-    for (const auto& [price, orders] : m_bids) {
-        bidsInfo.emplace_back(createLevelInfo(price, orders));
-    }
-
-    for (const auto& [price, orders] : m_asks) {
-        asksInfo.emplace_back(createLevelInfo(price, orders));
-    }
-
-    return OrderBookLevelsInfo { bidsInfo, asksInfo };
+    return levelsInfoNoLock();
 }
 
 auto OrderBook::placeOrder(const OrderPtr& order) -> Trades
@@ -149,7 +123,7 @@ auto OrderBook::cancelOrderNoLock(OrderId id) -> void
 
 auto OrderBook::canFullyFillOrderNoLock(Side side, Price price, Quantity quantity) const -> bool
 {
-    auto orderBookLevelsInfo { levelsInfo() };
+    auto orderBookLevelsInfo { levelsInfoNoLock() };
     const auto& levelsInfo { side == Side::buy ? orderBookLevelsInfo.askLevelsInfo() : orderBookLevelsInfo.bidLevelsInfo() };
 
     Quantity totalQuantity { 0 };
@@ -194,6 +168,36 @@ auto OrderBook::convertMarketOrderNoLock(const OrderPtr& order) -> bool
         return true;
     }
     return false;
+}
+
+auto OrderBook::levelsInfoNoLock() const -> OrderBookLevelsInfo
+{
+    LevelsInfo bidsInfo;
+    LevelsInfo asksInfo;
+
+    // Ensures no further reallocations.
+    bidsInfo.reserve(m_bids.size());
+    asksInfo.reserve(m_asks.size());
+
+    auto createLevelInfo = [](Price price, const Orders& orders) {
+        Quantity totalQuantity { 0 };
+
+        for (const auto& order : orders) {
+            totalQuantity += order->remainingQuantity();
+        }
+
+        return LevelInfo { price, totalQuantity };
+    };
+
+    for (const auto& [price, orders] : m_bids) {
+        bidsInfo.emplace_back(createLevelInfo(price, orders));
+    }
+
+    for (const auto& [price, orders] : m_asks) {
+        asksInfo.emplace_back(createLevelInfo(price, orders));
+    }
+
+    return OrderBookLevelsInfo { bidsInfo, asksInfo };
 }
 
 auto OrderBook::matchOrdersNoLock() -> Trades

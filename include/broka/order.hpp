@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-using OrderId = int;
+using OrderId = unsigned int;
 
 enum class OrderType {
     fok, // Fill or kill.

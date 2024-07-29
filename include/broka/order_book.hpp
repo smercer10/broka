@@ -74,6 +74,7 @@ private:
     [[nodiscard]] auto canFullyFillOrderNoLock(Side side, Price price, Quantity quantity) const -> bool;
     [[nodiscard]] auto canPartiallyFillOrderNoLock(Side side, Price price) const -> bool;
     [[nodiscard]] auto convertMarketOrderNoLock(const OrderPtr& order) -> bool;
+    [[nodiscard]] auto levelsInfoNoLock() const -> OrderBookLevelsInfo;
     [[nodiscard]] auto matchOrdersNoLock() -> Trades;
     [[nodiscard]] auto placeOrderNoLock(const OrderPtr& order) -> Trades;
 };
