@@ -7,7 +7,7 @@ build:
 	cmake --build $(BUILD_DIR)
 
 test: build
-	cd $(BUILD_DIR) && ctest
+	cd $(BUILD_DIR) && ctest --output-on-failure
 
 clean:
 	rm -rf $(BUILD_DIR)

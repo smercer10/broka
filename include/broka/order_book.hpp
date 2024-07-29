@@ -2,6 +2,7 @@
 #include "common.hpp"
 #include "order.hpp"
 #include "trade.hpp"
+#include <atomic>
 #include <condition_variable>
 #include <map>
 #include <mutex>
