@@ -3,6 +3,46 @@
 #include "gtest/gtest.h"
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+TEST(OrderBookTest, cancelOrder)
+{
+    OrderBook orderBook;
+    OrderPtr order1 { std::make_shared<Order>(1, OrderType::gtc, Side::buy, 99, 150) };
+    OrderPtr order2 { std::make_shared<Order>(2, OrderType::gtc, Side::buy, 98, 50) };
+    OrderPtr order3 { std::make_shared<Order>(3, OrderType::gtc, Side::sell, 101, 25) };
+    OrderPtr order4 { std::make_shared<Order>(4, OrderType::gtc, Side::buy, 99, 5) };
+
+    auto discard { orderBook.placeOrder(order1) };
+    discard = orderBook.placeOrder(order2);
+    discard = orderBook.placeOrder(order3);
+    discard = orderBook.placeOrder(order4);
+    EXPECT_EQ(orderBook.size(), 4);
+    EXPECT_EQ(orderBook.levelsInfo().bidLevelsInfo().size(), 2);
+    EXPECT_EQ(orderBook.levelsInfo().askLevelsInfo().size(), 1);
+
+    orderBook.cancelOrder(0);
+    EXPECT_EQ(orderBook.size(), 4);
+
+    orderBook.cancelOrder(1);
+    EXPECT_EQ(orderBook.size(), 3);
+    EXPECT_EQ(orderBook.levelsInfo().bidLevelsInfo().size(), 2);
+    EXPECT_EQ(orderBook.levelsInfo().askLevelsInfo().size(), 1);
+
+    orderBook.cancelOrder(2);
+    EXPECT_EQ(orderBook.size(), 2);
+    EXPECT_EQ(orderBook.levelsInfo().bidLevelsInfo().size(), 1);
+    EXPECT_EQ(orderBook.levelsInfo().askLevelsInfo().size(), 1);
+
+    orderBook.cancelOrder(3);
+    EXPECT_EQ(orderBook.size(), 1);
+    EXPECT_EQ(orderBook.levelsInfo().bidLevelsInfo().size(), 1);
+    EXPECT_EQ(orderBook.levelsInfo().askLevelsInfo().size(), 0);
+
+    orderBook.cancelOrder(4);
+    EXPECT_EQ(orderBook.size(), 0);
+    EXPECT_EQ(orderBook.levelsInfo().bidLevelsInfo().size(), 0);
+    EXPECT_EQ(orderBook.levelsInfo().askLevelsInfo().size(), 0);
+}
+
 TEST(OrderBookTest, placeFokOrder)
 {
     OrderBook orderBook;
