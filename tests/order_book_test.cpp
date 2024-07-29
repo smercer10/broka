@@ -210,4 +210,44 @@ TEST(OrderBookTest, placeMarketOrder)
     EXPECT_TRUE(order4->isFilled());
     EXPECT_EQ(order6->remainingQuantity(), 25);
 }
+
+TEST(OrderBookTest, updateOrder)
+{
+    OrderBook orderBook;
+    OrderPtr order1 { std::make_shared<Order>(1, OrderType::gtc, Side::buy, 99, 25) };
+    OrderPtr order2 { std::make_shared<Order>(2, OrderType::gtc, Side::buy, 98, 50) };
+    OrderPtr order3 { std::make_shared<Order>(3, OrderType::gtc, Side::sell, 101, 5) };
+
+    auto trades { orderBook.placeOrder(order1) };
+    EXPECT_EQ(orderBook.size(), 1);
+
+    trades = orderBook.placeOrder(order2);
+    EXPECT_TRUE(trades.empty());
+    EXPECT_EQ(orderBook.size(), 2);
+
+    trades = orderBook.placeOrder(order3);
+    EXPECT_TRUE(trades.empty());
+    EXPECT_EQ(orderBook.size(), 3);
+
+    trades = orderBook.updateOrder({ 3, 99, 50 });
+    EXPECT_EQ(trades[0].quantity(), 25);
+    EXPECT_EQ(trades[0].buySideInfo().orderId, 1);
+    EXPECT_EQ(trades[0].buySideInfo().price, 99);
+    EXPECT_EQ(trades[0].sellSideInfo().orderId, 3);
+    EXPECT_EQ(trades[0].sellSideInfo().price, 99);
+    EXPECT_EQ(orderBook.size(), 2);
+    EXPECT_TRUE(order1->isFilled());
+    EXPECT_EQ(orderBook.levelsInfo().bidLevelsInfo()[0].quantity, 50);
+    EXPECT_EQ(orderBook.levelsInfo().askLevelsInfo()[0].quantity, 25);
+
+    trades = orderBook.updateOrder({ 2, 100, 200 });
+    EXPECT_EQ(trades[0].quantity(), 25);
+    EXPECT_EQ(trades[0].buySideInfo().orderId, 2);
+    EXPECT_EQ(trades[0].buySideInfo().price, 100);
+    EXPECT_EQ(trades[0].sellSideInfo().orderId, 3);
+    EXPECT_EQ(trades[0].sellSideInfo().price, 99);
+    EXPECT_EQ(orderBook.size(), 1);
+    EXPECT_EQ(orderBook.levelsInfo().bidLevelsInfo()[0].quantity, 175);
+    EXPECT_TRUE(orderBook.levelsInfo().askLevelsInfo().empty());
+}
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
