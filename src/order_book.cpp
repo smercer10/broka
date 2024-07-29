@@ -119,6 +119,7 @@ auto OrderBook::cancelOrderNoLock(OrderId id) -> void
             m_asks.erase(order->price());
         }
     }
+    m_orders.erase(id);
 }
 
 auto OrderBook::canFullyFillOrderNoLock(Side side, Price price, Quantity quantity) const -> bool
