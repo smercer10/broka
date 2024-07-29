@@ -281,7 +281,7 @@ auto OrderBook::placeOrderNoLock(const OrderPtr& order) -> Trades
     trades = matchOrdersNoLock();
 
     if (order->type() == OrderType::ioc && !order->isFilled()) {
-        cancelOrder(order->id());
+        cancelOrderNoLock(order->id());
     }
 
     return trades;
